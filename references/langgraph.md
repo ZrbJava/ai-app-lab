@@ -1,7 +1,7 @@
 # LangGraph.js — 阅读笔记
 
 - **仓库**：https://github.com/langchain-ai/langgraphjs
-- **本地路径**：`~/oss/langgraphjs`
+- **本地路径**：`~/Desktop/bobo/oss/langgraphjs`
 - **相关 Lab**：07
 
 ## 解决什么问题

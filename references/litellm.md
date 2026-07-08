@@ -1,7 +1,7 @@
 # LiteLLM — 阅读笔记
 
 - **仓库**：https://github.com/BerriAI/litellm
-- **本地路径**：`~/oss/litellm`
+- **本地路径**：`~/Desktop/bobo/oss/litellm`
 - **相关 Lab**：03
 
 ## 解决什么问题

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# 将参考开源项目 clone 到 ~/oss/（浅克隆，不进 ai-app-lab 仓库）
+# 将参考开源项目 clone 到 ~/Desktop/bobo/oss/（浅克隆，不进 ai-app-lab 仓库）
 
 set -euo pipefail
 
-OSS_DIR="${OSS_DIR:-$HOME/oss}"
+OSS_DIR="${OSS_DIR:-$HOME/Desktop/bobo/oss}"
 mkdir -p "$OSS_DIR"
 
 repos=(

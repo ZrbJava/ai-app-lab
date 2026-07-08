@@ -1,7 +1,7 @@
 # NextChat — 阅读笔记
 
 - **仓库**：https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web
-- **本地路径**：`~/oss/ChatGPT-Next-Web`
+- **本地路径**：`~/Desktop/bobo/oss/ChatGPT-Next-Web`
 - **相关 Lab**：01
 
 ## 解决什么问题

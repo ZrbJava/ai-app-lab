@@ -1,7 +1,7 @@
 # Lobe Chat — 阅读笔记
 
 - **仓库**：https://github.com/lobehub/lobe-chat
-- **本地路径**：`~/oss/lobe-chat`
+- **本地路径**：`~/Desktop/bobo/oss/lobe-chat`
 - **相关 Lab**：08, 12
 
 ## 解决什么问题

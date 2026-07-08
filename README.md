@@ -30,7 +30,7 @@
 
 系统学习 **AI 应用开发** 的实验仓库：从最小 Chat 到 Agent、RAG、异步视频与 Docker 私有化。
 
-> 开源参考项目 clone 到仓库外（`~/oss/`），本仓库只放 **实验代码 + 结构化笔记 + 12 周路线图**。
+> 开源参考项目 clone 到仓库外（`~/Desktop/bobo/oss/`），本仓库只放 **实验代码 + 结构化笔记 + 12 周路线图**。
 
 <table>
 <tr>
@@ -131,7 +131,8 @@ ai-app-lab/
 git clone https://github.com/ZrbJava/ai-app-lab.git
 cd ai-app-lab
 
-# 克隆参考开源项目到 ~/oss（可选）
+# 克隆参考开源项目到 ~/Desktop/bobo/oss（可选）
+mkdir -p ~/Desktop/bobo/oss
 ./scripts/clone-references.sh
 
 # 本地 LLM（Lab 03 起）
@@ -149,7 +150,7 @@ cd labs/01-minimal-chat
 | 步骤 | 动作 | 位置 |
 |:----:|------|------|
 | 1 | 读概念 | `docs/` |
-| 2 | 读开源 | `references/` + `~/oss/` |
+| 2 | 读开源 | `references/` + `~/Desktop/bobo/oss/` |
 | 3 | 写代码 | `labs/xx/` |
 | 4 | 写复盘 | Lab `README.md` |
 

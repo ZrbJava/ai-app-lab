@@ -1,7 +1,7 @@
 # RAGFlow — 阅读笔记
 
 - **仓库**：https://github.com/infiniflow/ragflow
-- **本地路径**：`~/oss/ragflow`
+- **本地路径**：`~/Desktop/bobo/oss/ragflow`
 - **相关 Lab**：09
 
 ## 解决什么问题

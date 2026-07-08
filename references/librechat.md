@@ -1,7 +1,7 @@
 # LibreChat — 阅读笔记
 
 - **仓库**：https://github.com/danny-avila/LibreChat
-- **本地路径**：`~/oss/LibreChat`
+- **本地路径**：`~/Desktop/bobo/oss/LibreChat`
 - **相关 Lab**：05, 06, 11
 
 ## 解决什么问题

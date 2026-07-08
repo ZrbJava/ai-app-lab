@@ -1,7 +1,7 @@
 # Vercel AI SDK — 阅读笔记
 
 - **仓库**：https://github.com/vercel/ai
-- **本地路径**：`~/oss/ai`（运行 `./scripts/clone-references.sh`）
+- **本地路径**：`~/Desktop/bobo/oss/ai`（运行 `./scripts/clone-references.sh`）
 - **相关 Lab**：02, 03, 04
 
 ## 解决什么问题

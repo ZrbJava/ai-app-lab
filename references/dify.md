@@ -1,7 +1,7 @@
 # Dify — 阅读笔记
 
 - **仓库**：https://github.com/langgenius/dify
-- **本地路径**：`~/oss/dify`
+- **本地路径**：`~/Desktop/bobo/oss/dify`
 - **相关 Lab**：07, 09, 12
 
 ## 解决什么问题
