@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# next.js
+.next/
+out/
+
+# build
+dist/
+build/
+*.tsbuildinfo
+
+# logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# sqlite / local db
+*.db
+*.db-journal
+data/
+
+# IDE
+.idea/
+.vscode/
+
+# lab artifacts
+labs/**/coverage/
