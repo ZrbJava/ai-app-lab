@@ -11,22 +11,10 @@
 <br />
 
 <!-- Badges -->
-[![GitHub Stars](https://img.shields.io/github/stars/ZrbJava/ai-app-lab?style=for-the-badge&logo=github&color=6366f1&label=Stars)](https://github.com/ZrbJava/ai-app-lab/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg?style=for-the-badge)](./LICENSE)
 [![Labs](https://img.shields.io/badge/Labs-12-blue?style=for-the-badge&logo=react)](./LEARNING_PLAN.md)
 [![Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20AI%20SDK%20%7C%20Ollama-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![Duration](https://img.shields.io/badge/Duration-12%20Weeks-6366f1?style=for-the-badge&logo=clockify)](./LEARNING_PLAN.md)
-
-<br />
-
-<!-- Star trend -->
-<a href="https://star-history.com/#ZrbJava/ai-app-lab&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ZrbJava/ai-app-lab&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ZrbJava/ai-app-lab&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ZrbJava/ai-app-lab&type=Date" width="90%" />
-  </picture>
-</a>
 
 <br />
 
