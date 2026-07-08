@@ -128,7 +128,7 @@ ai-app-lab/
 ## 快速开始
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ai-app-lab.git
+git clone https://github.com/ZrbJava/ai-app-lab.git
 cd ai-app-lab
 
 # 克隆参考开源项目到 ~/oss（可选）
