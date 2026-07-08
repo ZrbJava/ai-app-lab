@@ -170,15 +170,6 @@ cd labs/01-minimal-chat
 
 ---
 
-## 与 Navos 产品的关系
-
-| 仓库 | 定位 |
-|------|------|
-| **ai-app-lab** | 学习实验，允许重构 |
-| **navos / navos-lite** | 产品仓库，从 Lab 12 抽取成熟模块 |
-
----
-
 <div align="center">
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:6366f1,100:8b5cf6&height=80&section=footer&fontSize=14&fontColor=ffffff&animation=twinkling" alt="Footer" width="100%" />
