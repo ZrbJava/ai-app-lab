@@ -77,7 +77,7 @@ Lab 10-12  多模态 & 产品整合
 ### 阶段二 · 工程化 `Week 4-6`
 
 - [ ] [Lab 04](./labs/04-tool-calling/) — Tool Calling
-- [ ] [Lab 05](./labs/05-session-persistence/) — 会话持久化
+- [x] [Lab 05](./labs/05-session-persistence/) — 会话持久化
 - [ ] [Lab 06](./labs/06-auth-byok/) — 登录 + BYOK 密钥
 
 ### 阶段三 · Agent `Week 7-9`
