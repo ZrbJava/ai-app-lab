@@ -35,7 +35,7 @@
 ## 可借鉴
 
 - [x] Provider 工厂（`createOpenAI` + 改 baseURL）
-- [ ] Tool 定义方式（Lab 04）
+- [x] Tool 定义方式（Lab 04）
 - [x] SSE 响应格式（`createUIMessageStreamResponse`）
 
 ## 不借鉴
