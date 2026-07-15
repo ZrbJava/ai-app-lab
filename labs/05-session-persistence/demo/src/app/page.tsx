@@ -6,13 +6,29 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import ChatPanel from '@/components/chat/ChatPanel'
 import McpSettings from '@/components/mcp/McpSettings'
 import AppShell from '@/components/shell/AppShell'
+import { useGeneratingSessions } from '@/hooks/useGeneratingSessions'
 import { useSessions } from '@/hooks/useSessions'
+import {
+	registerSessionsRefresh,
+	removeSessionChat,
+} from '@/lib/sessionChats'
 
 function WorkbenchContent() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const { sessions, loading, refresh, createSession, deleteSession } =
 		useSessions()
+
+	/** 侧栏「生成中…」指示：来自 sessionChats 的 generatingSessions */
+	const generatingSessionIds = useGeneratingSessions()
+
+	/**
+	 * 把侧栏 refresh 注册到 sessionChats。
+	 * 任意会话流式结束后，onFinish 会调用 refresh 更新 updated_at 排序。
+	 */
+	useEffect(() => {
+		registerSessionsRefresh(refresh)
+	}, [refresh])
 
 	const sessionId = searchParams.get('session')
 	const openAddDialog = searchParams.get('dialog') === 'add'
@@ -61,6 +77,8 @@ function WorkbenchContent() {
 	const handleDeleteSession = async (id: string) => {
 		const ok = await deleteSession(id)
 		if (!ok) return
+		// 同步清理内存中的 Chat 实例，若正在生成则 stop()
+		removeSessionChat(id)
 		if (sessionId === id) {
 			const remaining = sessions.filter(s => s.id !== id)
 			navigate({
@@ -83,11 +101,13 @@ function WorkbenchContent() {
 				navigate({ view: 'chat', session: id, dialog: null })
 			}
 			onDeleteSession={handleDeleteSession}
+			generatingSessionIds={generatingSessionIds}
 		>
 			{view === 'chat' ? (
 				<ChatPanel
 					sessionId={sessionId}
 					sessionTitle={sessions.find(s => s.id === sessionId)?.title}
+					sessionProvider={sessions.find(s => s.id === sessionId)?.provider}
 					onSessionsChange={refresh}
 				/>
 			) : (

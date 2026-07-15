@@ -13,8 +13,8 @@ import { PROVIDER_PRESETS } from '@/lib/providers'
 import {
 	getSession,
 	maybeUpdateSessionTitle,
-	saveMessage,
 	touchSession,
+	upsertMessage,
 } from '@/lib/sessions'
 import { chatTools } from '@/lib/tools'
 
@@ -50,8 +50,9 @@ export async function POST(req: Request) {
 	}
 
 	const lastMessage = messages.at(-1)
+	// 流式开始前写入 user 消息，确保刷新后至少能看到用户输入
 	if (sessionId && lastMessage?.role === 'user') {
-		saveMessage(sessionId, lastMessage)
+		upsertMessage(sessionId, lastMessage)
 		maybeUpdateSessionTitle(sessionId, lastMessage)
 	}
 
@@ -84,9 +85,28 @@ export async function POST(req: Request) {
 
 	return result.toUIMessageStreamResponse({
 		originalMessages: messages,
-		onEnd: async ({ responseMessage, isAborted }) => {
-			if (!sessionId || isAborted) return
-			saveMessage(sessionId, responseMessage)
+		/**
+		 * 流式响应结束时的服务端持久化（主路径）。
+		 *
+		 * 注意：
+		 * - 不再因 isAborted 跳过保存：用户切换会话/刷新导致 disconnect 时，
+		 *   已生成的内容仍应落库（ChatGPT 同款语义：切换 ≠ 取消）
+		 * - responseMessage 在部分 tool calling 场景可能不完整，
+		 *   兜底从 allMessages 取最后一条 assistant
+		 * - 与客户端 sessionChats.onFinish 形成双写，message.id 幂等
+		 */
+		onEnd: async ({ responseMessage, messages: allMessages }) => {
+			if (!sessionId) return
+
+			const assistant =
+				responseMessage?.parts?.length &&
+				responseMessage.role === 'assistant'
+					? responseMessage
+					: allMessages.filter(m => m.role === 'assistant').at(-1)
+
+			if (!assistant?.parts?.length) return
+
+			upsertMessage(sessionId, assistant)
 			touchSession(sessionId)
 		},
 	})

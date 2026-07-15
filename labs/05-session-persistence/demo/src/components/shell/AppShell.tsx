@@ -16,6 +16,8 @@ type AppShellProps = {
 	onNewSession?: () => void
 	onSelectSession?: (id: string) => void
 	onDeleteSession?: (id: string) => void
+	/** 正在后台生成回复的会话 ID，用于侧栏「生成中…」提示 */
+	generatingSessionIds?: string[]
 }
 
 function IconChat({ className }: { className?: string }) {
@@ -52,7 +54,9 @@ export default function AppShell({
 	onNewSession,
 	onSelectSession,
 	onDeleteSession,
+	generatingSessionIds = [],
 }: AppShellProps) {
+	const generatingSet = new Set(generatingSessionIds)
 	return (
 		<div className='app-shell bg-white text-neutral-900'>
 			<aside className='app-sidebar'>
@@ -77,6 +81,7 @@ export default function AppShell({
 							{sessions.map(session => {
 								const active =
 									view === 'chat' && session.id === activeSessionId
+								const generating = generatingSet.has(session.id)
 								return (
 									<li key={session.id} className='group relative'>
 										<button
@@ -85,6 +90,12 @@ export default function AppShell({
 											className={`sb-btn pr-9 ${active ? 'sb-btn-active' : ''}`}
 										>
 											<p className='truncate'>{session.title}</p>
+											{/* 非当前会话且在后台生成时显示，避免与当前页 loading 重复 */}
+											{generating && !active && (
+												<p className='mt-0.5 truncate text-[10px] text-emerald-400/90'>
+													生成中…
+												</p>
+											)}
 										</button>
 										<button
 											type='button'

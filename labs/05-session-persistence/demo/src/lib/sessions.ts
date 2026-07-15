@@ -121,22 +121,41 @@ export function messageExists(id: string) {
 	return Boolean(row)
 }
 
-export function saveMessage(sessionId: string, message: UIMessage) {
-	if (messageExists(message.id)) return
-
+/**
+ * 插入或更新一条消息。
+ *
+ * 为什么需要 upsert 而不是 insert-only？
+ * - 流式生成中断时，可能先写入 partial assistant，后续再更新完整内容
+ * - 客户端 onFinish 与服务端 onEnd 可能先后到达，需幂等写入
+ * - tool calling 消息的 parts 会随流式更新而变化
+ *
+ * 以 message.id 为唯一键：存在则 UPDATE parts，不存在则 INSERT。
+ */
+export function upsertMessage(sessionId: string, message: UIMessage) {
+	const parts = JSON.stringify(message.parts)
 	const createdAt = nowIso()
+
+	if (messageExists(message.id)) {
+		getDb()
+			.prepare(
+				`UPDATE messages SET parts = ?, role = ? WHERE id = ? AND session_id = ?`,
+			)
+			.run(parts, message.role, message.id, sessionId)
+		return
+	}
+
 	getDb()
 		.prepare(
 			`INSERT INTO messages (id, session_id, role, parts, created_at)
 			 VALUES (?, ?, ?, ?, ?)`,
 		)
-		.run(
-			message.id,
-			sessionId,
-			message.role,
-			JSON.stringify(message.parts),
-			createdAt,
-		)
+		.run(message.id, sessionId, message.role, parts, createdAt)
+}
+
+/** @deprecated Use upsertMessage — kept for insert-only callers */
+export function saveMessage(sessionId: string, message: UIMessage) {
+	if (messageExists(message.id)) return
+	upsertMessage(sessionId, message)
 }
 
 export function maybeUpdateSessionTitle(sessionId: string, message: UIMessage) {

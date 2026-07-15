@@ -1,10 +1,19 @@
 'use client'
 
+/**
+ * 聊天主面板
+ *
+ * 会话切换与流式持久化相关逻辑见：
+ * - `lib/sessionChats.ts`：按会话隔离 Chat 实例
+ * - 下方 `useChat({ chat })` 与 `useEffect` 历史加载策略
+ */
+
 import { useChat } from '@ai-sdk/react'
 import { getToolName, isToolUIPart, type UIMessage } from 'ai'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useMcpServers } from '@/hooks/useMcpServers'
+import { getOrCreateSessionChat, getSessionChat, isSessionGenerating } from '@/lib/sessionChats'
 import { PROVIDER_PRESETS, type ProviderId } from '@/lib/providers'
 
 const SUGGESTIONS = [
@@ -95,64 +104,170 @@ function MessageRow({ message }: { message: UIMessage }) {
 type ChatPanelProps = {
 	sessionId: string | null
 	sessionTitle?: string | null
+	/** 来自侧栏 sessions 列表，避免切换会话时重复请求 provider */
+	sessionProvider?: ProviderId
 	onSessionsChange?: () => void
+}
+
+/** 从 SQLite 加载指定会话的完整历史 */
+async function fetchSessionMessages(sessionId: string) {
+	const res = await fetch(`/api/sessions/${sessionId}/messages`)
+	if (!res.ok) throw new Error('加载历史失败')
+	return res.json() as Promise<{
+		messages: UIMessage[]
+		session: { provider: ProviderId; title: string }
+	}>
 }
 
 export default function ChatPanel({
 	sessionId,
 	sessionTitle,
+	sessionProvider,
 	onSessionsChange,
 }: ChatPanelProps) {
 	const [input, setInput] = useState('')
-	const [provider, setProvider] = useState<ProviderId>('zhipu')
+	const [provider, setProvider] = useState<ProviderId>(
+		sessionProvider ?? 'zhipu',
+	)
 	const [historyLoading, setHistoryLoading] = useState(false)
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-	const { messages, sendMessage, setMessages, status, error } = useChat({
-		id: sessionId ?? 'draft',
-		onFinish: ({ message, isAbort, isError }) => {
-			if (!sessionId || isAbort || isError || message.role !== 'assistant') {
-				onSessionsChange?.()
-				return
-			}
+	/**
+	 * 从 registry 取当前会话的 Chat 实例。
+	 * useMemo 保证同一 sessionId 在 re-render 时返回同一引用。
+	 */
+	const sessionChat = useMemo(
+		() => (sessionId ? getOrCreateSessionChat(sessionId) : null),
+		[sessionId],
+	)
 
-			fetch(`/api/sessions/${sessionId}/messages`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ message }),
-			})
-				.catch(() => undefined)
-				.finally(() => onSessionsChange?.())
-		},
-	})
+	/**
+	 * 绑定已有 Chat 实例，而非 `useChat({ id: sessionId })`。
+	 *
+	 * 区别：
+	 * - `{ id }`：sessionId 变化 → 销毁旧 Chat → 流式中断
+	 * - `{ chat }`：切换会话只换订阅对象，旧会话 Chat 在 registry 里继续跑
+	 */
+	const { messages, sendMessage, setMessages, status, error } = useChat(
+		sessionChat ? { chat: sessionChat } : { id: 'draft' },
+	)
 	const { servers, enabledRuntime } = useMcpServers()
 
 	const isLoading = status === 'streaming' || status === 'submitted'
 	const enabledServers = servers.filter(s => s.enabled)
 
 	useEffect(() => {
+		if (sessionProvider) setProvider(sessionProvider)
+	}, [sessionProvider])
+
+	/**
+	 * 切换会话时加载历史消息（智能合并策略）。
+	 *
+	 * 三种情况：
+	 * 1. 该会话正在流式生成 → 不 fetch，直接用 registry 里 Chat 的内存消息
+	 * 2. 正常进入 → fetch 一次 DB 历史
+	 * 3. 后台生成完毕但 DB 尚未同步 → 条件轮询（见 applyHistory 内）
+	 *
+	 * 合并规则：DB 条数 > 内存条数时才 setMessages，避免覆盖正在流式的内容。
+	 */
+	useEffect(() => {
 		if (!sessionId) {
 			setMessages([])
 			return
 		}
 
+		const chat = getSessionChat(sessionId)
+		const isGenerating =
+			chat?.status === 'streaming' || chat?.status === 'submitted'
+
+		// 情况 1：流式进行中，内存状态比 DB 更新，不要用 DB 覆盖
+		if (isGenerating) {
+			setHistoryLoading(false)
+			return
+		}
+
 		let cancelled = false
+		let pollTimer: ReturnType<typeof setInterval> | undefined
+		let pollAttempts = 0
 		setHistoryLoading(true)
 
-		fetch(`/api/sessions/${sessionId}/messages`)
-			.then(async res => {
-				if (!res.ok) throw new Error('加载历史失败')
-				return res.json() as Promise<{
-					messages: UIMessage[]
-					session: { provider: ProviderId; title: string }
-				}>
-			})
-			.then(data => {
-				if (cancelled) return
+		const applyHistory = (data: {
+			messages: UIMessage[]
+			session: { provider: ProviderId; title: string }
+		}) => {
+			if (cancelled) return
+			const liveChat = getSessionChat(sessionId)
+			const liveMessages = liveChat?.messages ?? []
+			const liveCount = liveMessages.length
+			const liveLast = liveMessages.at(-1)
+
+			// 仅当 DB 比内存更完整时才覆盖（防止切回时抹掉流式状态）
+			if (data.messages.length > liveCount || liveCount === 0) {
 				setMessages(data.messages)
-				setProvider(data.session.provider)
-			})
+			}
+			setProvider(data.session.provider)
+
+			// 内存已有 assistant → 无需轮询
+			if (liveLast?.role === 'assistant') return
+
+			const lastDb = data.messages.at(-1)
+			const liveGenerating =
+				liveChat?.status === 'streaming' || liveChat?.status === 'submitted'
+
+			/**
+			 * 情况 3：条件轮询。
+			 *
+			 * 触发条件（同时满足）：
+			 * - DB 最后一条是 user（assistant 还没落库）
+			 * - 当前视图不在流式中
+			 * - registry 标记该会话仍在后台生成（isSessionGenerating）
+			 *
+			 * 停止条件：
+			 * - DB 出现 assistant / 内存出现 assistant / 生成结束 / 超过 20 次
+			 */
+			if (
+				lastDb?.role === 'user' &&
+				!liveGenerating &&
+				isSessionGenerating(sessionId) &&
+				!pollTimer
+			) {
+				pollTimer = setInterval(() => {
+					if (cancelled || pollAttempts >= 20) {
+						if (pollTimer) clearInterval(pollTimer)
+						return
+					}
+					pollAttempts += 1
+
+					const live = getSessionChat(sessionId)
+					if (live?.messages.at(-1)?.role === 'assistant') {
+						if (pollTimer) clearInterval(pollTimer)
+						return
+					}
+					if (live?.status === 'streaming' || live?.status === 'submitted') {
+						if (pollTimer) clearInterval(pollTimer)
+						return
+					}
+					if (!isSessionGenerating(sessionId)) {
+						if (pollTimer) clearInterval(pollTimer)
+						return
+					}
+
+					void fetchSessionMessages(sessionId)
+						.then(next => {
+							applyHistory(next)
+							if (next.messages.at(-1)?.role === 'assistant' && pollTimer) {
+								clearInterval(pollTimer)
+							}
+						})
+						.catch(() => undefined)
+				}, 2000)
+			}
+		}
+
+		// 情况 2：首次进入，拉一次 DB
+		fetchSessionMessages(sessionId)
+			.then(applyHistory)
 			.catch(() => {
 				if (!cancelled) setMessages([])
 			})
@@ -162,6 +277,7 @@ export default function ChatPanel({
 
 		return () => {
 			cancelled = true
+			if (pollTimer) clearInterval(pollTimer)
 		}
 	}, [sessionId, setMessages])
 

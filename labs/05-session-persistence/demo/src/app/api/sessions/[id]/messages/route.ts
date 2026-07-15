@@ -1,7 +1,13 @@
 import type { UIMessage } from 'ai'
 import { z } from 'zod'
 
-import { getSession, listMessages, maybeUpdateSessionTitle, saveMessage, touchSession } from '@/lib/sessions'
+import {
+	getSession,
+	listMessages,
+	maybeUpdateSessionTitle,
+	touchSession,
+	upsertMessage,
+} from '@/lib/sessions'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -36,7 +42,8 @@ export async function POST(req: Request, { params }: Params) {
 	}
 
 	const message = parsed.data.message as UIMessage
-	saveMessage(id, message)
+	// 客户端 onFinish 兜底写入；与服务端 chat/route onEnd 双写，upsert 幂等
+	upsertMessage(id, message)
 	if (message.role === 'user') {
 		maybeUpdateSessionTitle(id, message)
 	}
