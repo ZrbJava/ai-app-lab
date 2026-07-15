@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background: #ffffff;
+  color: #0d0d0d;
+}
+
+/* 布局兜底 */
+.app-shell {
+  display: flex;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 侧栏统一色板：单底色 + 白透明度层级 */
+.app-sidebar {
+  --sb-bg: #171717;
+  --sb-text: rgba(255, 255, 255, 0.88);
+  --sb-text-muted: rgba(255, 255, 255, 0.42);
+  --sb-hover: rgba(255, 255, 255, 0.08);
+  --sb-active: rgba(255, 255, 255, 0.14);
+  --sb-border: rgba(255, 255, 255, 0.1);
+
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  min-width: 260px;
+  flex-shrink: 0;
+  background: var(--sb-bg);
+  color: var(--sb-text);
+}
+
+.app-sidebar .sb-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--sb-text);
+  transition: background-color 150ms;
+}
+
+.app-sidebar .sb-btn:hover {
+  background: var(--sb-hover);
+}
+
+.app-sidebar .sb-btn-active {
+  background: var(--sb-active);
+  color: #fff;
+}
+
+.app-sidebar .sb-btn-ghost {
+  border: 1px solid var(--sb-border);
+  color: var(--sb-text);
+}
+
+.app-sidebar .sb-divider {
+  border-color: var(--sb-border);
+}
+
+.app-sidebar .sb-muted {
+  color: var(--sb-text-muted);
+}
+
+.app-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-thread {
+  width: 100%;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
