@@ -71,15 +71,16 @@
 | **概念** | sessionId、migration、CRUD、分页历史 |
 | **通过标准** | 左侧会话列表，点击可加载历史消息 |
 
-### Lab 06 — Auth + BYOK（第 6 周）
+### Lab 06 — Auth + BYOK + Markdown 基础（第 6 周）
 
 | 项 | 内容 |
 |----|------|
-| **目标** | **登录用户** 配置自己的 API Key，服务端代调用 |
-| **交付** | Auth.js 注册登录 + providers 表 + Key 掩码展示 |
-| **参考** | LibreChat 用户 endpoint 配置 |
-| **概念** | Session、加密存储、多用户隔离 |
-| **通过标准** | A 用户看不到 B 的会话和 Key |
+| **目标** | **登录用户** 配置自己的 API Key，服务端代调用；聊天消息支持基础 Markdown |
+| **交付** | Auth.js 注册登录 + `user_providers` 表 + Key 加密掩码 + `sessions.userId` 隔离 + `MarkdownContent` / `CodeBlock` |
+| **参考** | LibreChat 多用户 BYOK；LobeChat 消息 Markdown（基础版） |
+| **概念** | Session、加密存储、多用户隔离、remark/rehype 渲染管道 |
+| **通过标准** | A 用户看不到 B 的会话和 Key；AI 回复 Markdown + 代码高亮正常 |
+| **不做** | Mermaid、图片上传、Artifact 分块 → Lab 08 / 10 |
 
 ---
 
