@@ -16,6 +16,7 @@ export async function requireUser() {
 		throw new AuthError('未登录')
 	}
 
+	// JWT 有效但 users 表无记录（常见于切换 Lab / 新 data 目录）→ 避免 FK 500
 	const dbUser = getUserById(session.user.id)
 	if (!dbUser) {
 		throw new AuthError(

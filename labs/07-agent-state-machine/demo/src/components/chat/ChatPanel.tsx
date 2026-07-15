@@ -94,7 +94,8 @@ function MessageRow({
 	isStreaming?: boolean
 }) {
 	const isUser = message.role === 'user'
-	const textOptions = isStreaming ? { plainText: true } : undefined
+	// const textOptions = isStreaming ? { plainText: true } : undefined
+	const textOptions = undefined
 
 	if (isUser) {
 		return (
@@ -142,6 +143,8 @@ async function fetchSessionMessages(sessionId: string) {
 	}>
 }
 
+const AGENT_MODE_KEY = 'lab07-agent-mode'
+
 export default function ChatPanel({
 	sessionId,
 	sessionTitle,
@@ -153,6 +156,7 @@ export default function ChatPanel({
 		sessionProvider ?? 'zhipu'
 	)
 	const [historyLoading, setHistoryLoading] = useState(false)
+	const [agentMode, setAgentMode] = useState(false)
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -183,6 +187,26 @@ export default function ChatPanel({
 	useEffect(() => {
 		if (sessionProvider) setProvider(sessionProvider)
 	}, [sessionProvider])
+
+	useEffect(() => {
+		try {
+			setAgentMode(localStorage.getItem(AGENT_MODE_KEY) === '1')
+		} catch {
+			// ignore
+		}
+	}, [])
+
+	const toggleAgentMode = () => {
+		setAgentMode(prev => {
+			const next = !prev
+			try {
+				localStorage.setItem(AGENT_MODE_KEY, next ? '1' : '0')
+			} catch {
+				// ignore
+			}
+			return next
+		})
+	}
 
 	/**
 	 * 切换会话时加载历史消息（智能合并策略）。
@@ -318,6 +342,7 @@ export default function ChatPanel({
 					sessionId,
 					provider,
 					mcpServers: enabledRuntime(),
+					agentMode,
 				},
 			}
 		)
@@ -338,8 +363,26 @@ export default function ChatPanel({
 							MCP：{enabledServers.map(s => s.name).join('、')}
 						</p>
 					)}
+					{agentMode && (
+						<p className='mt-0.5 truncate text-xs text-violet-600'>
+							Agent：analyze → plan → execute → answer
+						</p>
+					)}
 				</div>
-				<select
+				<div className='flex shrink-0 items-center gap-2'>
+					<button
+						type='button'
+						onClick={toggleAgentMode}
+						disabled={!sessionId}
+						className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50 ${
+							agentMode
+								? 'border-violet-300 bg-violet-50 text-violet-800'
+								: 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
+						}`}
+					>
+						{agentMode ? 'Agent 开' : 'Agent 关'}
+					</button>
+					<select
 					value={provider}
 					onChange={e => setProvider(e.target.value as ProviderId)}
 					disabled={isLoading || !sessionId}
@@ -351,6 +394,7 @@ export default function ChatPanel({
 						</option>
 					))}
 				</select>
+				</div>
 			</div>
 
 			<div className='min-h-0 flex-1 overflow-y-auto'>
